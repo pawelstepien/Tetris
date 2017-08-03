@@ -1,11 +1,34 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
 .container{
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
     width: 100%;
     height: 100vh;
 }
-#canvas{
+#canvas, #next_block{
     border: 3px solid black;
+}
+#next_block{
+    border-top: 0;
+}
 
+.score{
+    width: 256px;
+    display: flex;
+}
+.score h2{
+    font-size: 30px;
+    font-weight: 700;
+}
+.score_counter{
+    color: red;
+}
+.game_speed{
+    color: lime;
 }

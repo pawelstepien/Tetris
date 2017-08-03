@@ -74,22 +74,34 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 document.addEventListener("DOMContentLoaded", function(){
 
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext('2d');
 
+    const nextBlockWindow = document.querySelector("#next_block");
+    const windowCtx = nextBlockWindow.getContext('2d');
 
+    const scoreCounter = document.querySelector(".score_counter");
+    const gameSpeed = document.querySelector(".game_speed");
 
+    const audio = new Audio('./sound/tetris_theme.mp3');
+    audio.play();
+    audio.addEventListener('ended', function() {
+    this.currentTime = 0;
+    this.play();
+}, false);
 
 
 class Map{
     constructor(){
         //To będzie można rozwiązać bardziej elegancko
 
-        this.gameMap = [[],[],[],[],[],[],[],[],[],[]];
+        this.gameMap = [];
         for (let i = 0; i < 10; i++) {
+            let row = [];
             for (let j = 0; j < 20; j++) {
-                this.gameMap[i].push("");
+                row.push("");
             }
+            this.gameMap.push(row);
         }
 
         this.currentX = 0;
@@ -97,13 +109,21 @@ class Map{
         this.currentType = null;
         this.currentRotation = 0;
         this.gameStarted = false;
+        this.isGameOver=false;
+        this.score = 0;
+        this.difficulty = 3;
+
+        scoreCounter.innerText=this.score;
+        gameSpeed.innerText=this.difficulty;
 
     }
     //To będzie można przenieść do game
-    //Dodaj shadow
-    createRect(x, y, color){
+
+    createRect(x, y, color, ctx){
         ctx.strokeStyle="black";
         ctx.fillStyle = color;
+        ctx.shadowBlur=1;
+        ctx.shadowColor="black";
         ctx.fillRect(x*25, y*25, 25, 25);
         ctx.strokeRect(x*25, y*25, 25, 25);
     }
@@ -115,7 +135,7 @@ class Map{
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 20; j++) {
                     if(this.gameMap[i][j] !== ""){
-                        this.createRect(i, j,this.gameMap[i][j] )
+                        this.createRect(i, j,this.gameMap[i][j], ctx)
                     }
                 }
             }
@@ -132,22 +152,36 @@ class Map{
         }
     }
 
+    showNextBlock(block){
+        windowCtx.clearRect(0,0, 100, 100);
+            for (let i = 0; i < 4; i++) {
+                for(let j = 0; j < 4; j++){
+                    if(block.rotations[0][i][j]){
+                        this.createRect(i, j, block.color, windowCtx);
+                    }
+                }
+            }
+        }
+
     deleteBlock(x, y, type, rotation){
         for (let i = 0; i < 4; i++) {
             for(let j = 0; j < 4; j++){
                 if(type.rotations[rotation][i][j]){
-                    this.gameMap[j+x][i+y]="";
+
+                        this.gameMap[j+x][i+y]="";
+
                 }
             }
         }
     }
 
 // Call this function wih parameters of potential block to see if it would collide with other blocks
+//Trzeba usprawnić wychodzenie poza mape
     detectCollision(x, y, type, rotation){
         for (let i = 0; i < 4; i++) {
             for(let j = 0; j < 4; j++){
-                if(type.rotations[rotation][i][j]){
-                    if(this.gameMap[j+x][i+y]!==""){
+                if(type.rotations[rotation][i][j]) {
+                    if(j+x<0 || j+x>9 || this.gameMap[j+x][i+y]!==""){
                         return true;
                     }
                 }
@@ -168,33 +202,43 @@ class Map{
                 }
             }
             if(rowFull){
-                // this.deleteRow(i);
-            }else{
-                return false;
+                this.deleteRow(i);
+                this.checkDifficultyLevel();
+                i=20;
             }
 
         }
     }
-    //
-    // deleteRow(row){
-    //
-    //         // for(let j = 0; j < 10; j++){
-    //         //     this.gameMap[j][row]=""
-    //         // }
-    //         let tempMap=[];
-    //         for(let i = 0; i < 19; i++){
-    //             for(let j = 0; j < 10; j++){
-    //             tempMap[j][i]=this.gameMap[j][i];
-    //             }
-    //         }
-    //         console.log(tempMap);
-    //         // this.gameMap = tempMap;
-    // }
 
+    deleteRow(row){
+        let tempMap=[];
+
+        for(let i = 0; i < 10; i++){
+            //Lecimy po  kolumnach
+            let newCol = [];
+            for(let j = 19; j > 0; j--){
+                //Lecim po elementach kolumny od końca
+                if(j != row){ //Pomijamy rząd do usunięcia, trzeba go będzie uzupełnić
+                    newCol.unshift(this.gameMap[i][j]);
+                }
+
+            }
+            while(newCol.length<20){
+                newCol.unshift(""); //Uzupełniam do pełnej kolumny
+            }
+            //Wpycham kolumnę do mapy
+            tempMap.push(newCol)
+        }
+        this.deleteBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
+        this.gameMap = tempMap;
+        this.score += this.difficulty;
+        scoreCounter.innerText=(this.score);
+    }
+
+//To można będzie dodać do shapes
 
     randomShape(){
-        let number = Math.round(Math.random()*6);
-        console.log(number);
+        let number = Math.round(Math.random()*7);
         switch(number){
             case 0:
                 return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].o;
@@ -203,18 +247,38 @@ class Map{
             case 2:
                 return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].l;
             case 3:
-                return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].i;
+                return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].z;
             case 4:
                 return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].t;
             case 5:
                 return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].s;
             case 6:
-                return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].z;
+                return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].i;
+            case 7:
+                return __WEBPACK_IMPORTED_MODULE_0__shapes__["a" /* shapes */].i;
         }
     }
 
+    checkDifficultyLevel(){
+        if(this.score>3){
+            this.difficulty = 3 + Math.ceil(this.score/10);
+            gameSpeed.innerText=this.difficulty;
+        }
+    }
+
+//Do poprawy
+    gameOver(){
+        this.isGameOver=true;
+        ctx.font = "30px Arial";
+        ctx.strokeStyle="black";
+        ctx.clearRect(0,0,canvas.width, canvas.height)
+        ctx.rect(0, 0, canvas.width, canvas.height)
+        ctx.strokeText("Game Over",50, canvas.height/2);
+        console.log("Game over");
+    }
+
     handleKeyUp(event){
-        console.log(event);
+        console.log(event.key);
          if(event.key=="ArrowLeft"){
             this.deleteBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
             if(!this.detectCollision(this.currentX-1, this.currentY, this.currentType, this.currentRotation)){
@@ -241,6 +305,12 @@ class Map{
                 }
                 this.createBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
             }
+        }else if(event.key=="ArrowDown"){
+            this.deleteBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
+            if(!this.detectCollision(this.currentX, this.currentY+1, this.currentType, this.currentRotation)){
+                this.currentY++;
+            }
+            this.createBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
         }
         this.drawMap();
     }
@@ -248,10 +318,8 @@ class Map{
     fallingBlock(type){
         this.currentX=4;
         this.currectY=-2;
-
-
-
-        console.log(this.currentY);
+        this.nextBlock = this.randomShape();
+        this.showNextBlock(this.nextBlock);
         this.currentType = type;
         this.currentRotation = 0;
 
@@ -259,24 +327,25 @@ class Map{
 
         this.createBlock(this.currentX, this.currentY, this.currentType, this.currentRotation );
 
-        const interval = setInterval(()=>{
+        this.interval = setInterval(()=>{
             this.drawMap();
             this.deleteBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
             if(this.detectCollision(this.currentX, this.currentY+1, this.currentType, this.currentRotation)){
                 console.log("kolizja");
-                clearInterval(interval);
+                clearInterval(this.interval);
                 this.createBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
-                console.log("Interval cleared");
+                //Check if row is full
+                this.detectFullRow();
+
                 this.currentX=4;
                 this.currentY=0;
-                this.fallingBlock(this.randomShape());
+                this.fallingBlock(this.nextBlock);
             } else{
                 this.currentY++;
                 this.createBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
             }
-            //Upewnij się czy to dobre miejsce na sprawdzenie pełnego rzędu
-            console.log("rząd " + this.detectFullRow());
-        }, 1000/5);
+
+        }, 1000/this.difficulty);
 
         if(!this.gameStarted){
             document.addEventListener("keyup", this.handleKeyUp.bind(this));
@@ -284,8 +353,10 @@ class Map{
         this.gameStarted=true;
 
     }else{
-        console.log("GAME OVER!");
-    ctx.clearRect(0,0, canvas.width, canvas.height);
+        clearInterval(this.interval);
+        document.removeEventListener("keyup", this.handleKeyUp.bind(this))
+        this.gameOver();
+    // ctx.clearRect(0,0, canvas.width, canvas.height);
 }
 
 }
@@ -295,6 +366,8 @@ const map = new Map;
 map.drawMap();
 
 map.fallingBlock(map.randomShape());
+// map.fallingBlock(shapes.i);
+
 
 
 
@@ -404,12 +477,7 @@ const shapes={
             },
 
             i: {rotations:[
-                        [
-                            [0, 1, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 1, 0, 0],
-                            [0, 1, 0, 0]
-                        ],
+
                         [
                             [0, 0, 0, 0],
                             [1, 1, 1, 1],
@@ -427,18 +495,24 @@ const shapes={
                             [0, 0, 0, 0],
                             [1, 1, 1, 1],
                             [0, 0, 0, 0]
+                        ],
+                        [
+                            [0, 1, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 1, 0, 0]
                         ]
                     ],
                     color: "lime"
                 },
 
                 s: {rotations:[
-                            [
-                                [0, 0, 0, 0],
-                                [0, 1, 1, 0],
-                                [1, 1, 0, 0],
-                                [0, 0, 0, 0]
-                            ],
+                    [
+                        [0, 1, 1, 0],
+                        [1, 1, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0]
+                    ],
                             [
                                 [1, 0, 0, 0],
                                 [1, 1, 0, 0],
@@ -446,9 +520,9 @@ const shapes={
                                 [0, 0, 0, 0]
                             ],
                             [
+                                [0, 0, 0, 0],
                                 [0, 1, 1, 0],
                                 [1, 1, 0, 0],
-                                [0, 0, 0, 0],
                                 [0, 0, 0, 0]
                             ],
                             [
@@ -461,12 +535,13 @@ const shapes={
                         color: "steelblue"
                     },
                     z: {rotations:[
-                                [
-                                    [0, 0, 0, 0],
-                                    [1, 1, 0, 0],
-                                    [0, 1, 1, 0],
-                                    [0, 0, 0, 0]
-                                ],
+                        [
+                            [1, 1, 0, 0],
+                            [0, 1, 1, 0],
+                            [0, 0, 0, 0],
+                            [0, 0, 0, 0]
+                        ],
+
                                 [
                                     [0, 1, 0, 0],
                                     [1, 1, 0, 0],
@@ -474,9 +549,9 @@ const shapes={
                                     [0, 0, 0, 0]
                                 ],
                                 [
+                                    [0, 0, 0, 0],
                                     [1, 1, 0, 0],
                                     [0, 1, 1, 0],
-                                    [0, 0, 0, 0],
                                     [0, 0, 0, 0]
                                 ],
                                 [
@@ -489,30 +564,32 @@ const shapes={
                             color: "purple"
                         },
                         t: {rotations:[
-                                    [
-                                        [0, 0, 0, 0],
-                                        [1, 1, 1, 0],
-                                        [0, 1, 0, 0],
-                                        [0, 0, 0, 0]
-                                    ],
+                            [
+                                [0, 1, 0, 0],
+                                [1, 1, 1, 0],
+                                [0, 0, 0, 0],
+                                [0, 0, 0, 0]
+                            ],
+                            [
+                                [0, 1, 0, 0],
+                                [0, 1, 1, 0],
+                                [0, 1, 0, 0],
+                                [0, 0, 0, 0]
+                            ],
+                            [
+                                [0, 0, 0, 0],
+                                [1, 1, 1, 0],
+                                [0, 1, 0, 0],
+                                [0, 0, 0, 0]
+                            ],
                                     [
                                         [0, 1, 0, 0],
                                         [1, 1, 0, 0],
                                         [0, 1, 0, 0],
                                         [0, 0, 0, 0]
-                                    ],
-                                    [
-                                        [0, 1, 0, 0],
-                                        [1, 1, 1, 0],
-                                        [0, 0, 0, 0],
-                                        [0, 0, 0, 0]
-                                    ],
-                                    [
-                                        [0, 1, 0, 0],
-                                        [0, 1, 1, 0],
-                                        [0, 1, 0, 0],
-                                        [0, 0, 0, 0]
                                     ]
+
+
                                 ],
                                 color: "green"
                             }
