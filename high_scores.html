@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CodersLab</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container">
+    <nav class="navigation">
+        <a href="./index.html">Game</a>
+        <a href="./high_scores.html" class="active">High Scores</a>
+    </nav>
+    <div class="high_scores">
+        <ol class="score_list">
+            
+        </ol>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/4.2.0/firebase.js"></script>
+<script>
+var scoreList = document.querySelector(".score_list");
+
+var config = {
+  apiKey: "AIzaSyClwSzGLCIn4S20UisHxpQYqJKqJKmBrFQ",
+  authDomain: "tetris-1aaf5.firebaseapp.com",
+  databaseURL: "https://tetris-1aaf5.firebaseio.com",
+  projectId: "tetris-1aaf5",
+  storageBucket: "",
+  messagingSenderId: "261711421963"
+}
+firebase.initializeApp(this.config);
+var ref = firebase.database().ref();
+
+ref.orderByChild("score").on("child_added", function(snapshot) {
+   scoreList.innerHTML = "<li>" + snapshot.val().name + " - " + snapshot.val().score + "</li>" + scoreList.innerHTML;
+});
+
+</script>
+</body>
+</html>

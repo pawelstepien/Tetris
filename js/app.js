@@ -1,4 +1,6 @@
 import {shapes} from './shapes';
+import {highScores} from './high_scores';
+
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -18,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
         this.currentTime = 0;
         this.play();
     }, false);
+
 
     class Game {
         constructor() {
@@ -195,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
             windowCtx.fillText("Game", 3, 40);
             windowCtx.fillText("Over", 5, 70);
             gameOverMessage.innerText = "Press space for new game";
+            highScores.sendHighScore(this.score);
         }
         //Dealing with controls
         handleKeyUp(event) {

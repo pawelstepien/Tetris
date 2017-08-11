@@ -70,6 +70,9 @@
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__shapes__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__high_scores__ = __webpack_require__(2);
+
+
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -90,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function() {
         this.currentTime = 0;
         this.play();
     }, false);
+
 
     class Game {
         constructor() {
@@ -267,6 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
             windowCtx.fillText("Game", 3, 40);
             windowCtx.fillText("Over", 5, 70);
             gameOverMessage.innerText = "Press space for new game";
+            __WEBPACK_IMPORTED_MODULE_1__high_scores__["a" /* highScores */].sendHighScore(this.score);
         }
         //Dealing with controls
         handleKeyUp(event) {
@@ -580,6 +585,52 @@ const shapes={
     }
 }
 
+
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return highScores; });
+String.prototype.escapeDiacritics = function()
+{
+    return this.replace(/ą/g, 'a').replace(/Ą/g, 'A')
+        .replace(/ć/g, 'c').replace(/Ć/g, 'C')
+        .replace(/ę/g, 'e').replace(/Ę/g, 'E')
+        .replace(/ł/g, 'l').replace(/Ł/g, 'L')
+        .replace(/ń/g, 'n').replace(/Ń/g, 'N')
+        .replace(/ó/g, 'o').replace(/Ó/g, 'O')
+        .replace(/ś/g, 's').replace(/Ś/g, 'S')
+        .replace(/ż/g, 'z').replace(/Ż/g, 'Z')
+        .replace(/ź/g, 'z').replace(/Ź/g, 'Z');
+}
+
+const highScores = {
+
+config : {
+  apiKey: "AIzaSyClwSzGLCIn4S20UisHxpQYqJKqJKmBrFQ",
+  authDomain: "tetris-1aaf5.firebaseapp.com",
+  databaseURL: "https://tetris-1aaf5.firebaseio.com",
+  projectId: "tetris-1aaf5",
+  storageBucket: "",
+  messagingSenderId: "261711421963"
+},
+
+
+sendHighScore(score){
+    const record = {};
+    record.score = score;
+    record.name = prompt("What's your name?", "Kasia Cichopek");
+    record.name= record.name.escapeDiacritics();
+    firebase.initializeApp(this.config);
+    const ref = firebase.database().ref();
+    ref.push(record)
+    console.log(ref);
+}
+
+}
 
 
 

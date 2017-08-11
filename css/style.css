@@ -17,17 +17,50 @@ body{
     width: 100%;
     height: 100vh;
 }
+.navigation{
+    display: flex;
+    width: 250px;
+    justify-content: space-around;
+    border: 3px solid black;
+    border-bottom: initial;
+    padding: 2px 0;
+}
+.navigation a{
+    font-size: 18px;
+    color: #555555;
+}
+.navigation .active{
+    color: black;
+}
+
 #canvas{
     border: 3px solid black;
 }
 #next_block{
     border-top: 0;
 }
-/*.counters{
-    border-right: 3px solid black;
-    border-bottom: 3px solid black;
-}*/
-
+.high_scores{
+    width: 250px;
+    height: 603px;
+    border: 3px solid black;
+    overflow-y: auto;
+}
+.score_list{
+    list-style-position: inside;
+    font-size: 14px;
+}
+.score_list li{
+    margin-bottom: 5px;
+}
+.score_list li:nth-of-type(3n+1){
+    color: blue;
+}
+.score_list li:nth-of-type(3n+2){
+    color: red;
+}
+.score_list li:nth-of-type(3n){
+    color: lime;
+}
 .menu{
     width: 250px;
     display: flex;
