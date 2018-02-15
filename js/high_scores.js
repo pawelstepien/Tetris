@@ -27,11 +27,13 @@ sendHighScore(score){
     const record = {};
     record.score = score;
     record.name = prompt("What's your name?", "Kasia Cichopek");
+    if (record.name === null) {
+        return;
+    }
     record.name= record.name.escapeDiacritics();
     firebase.initializeApp(this.config);
     const ref = firebase.database().ref();
     ref.push(record)
-    console.log(ref);
 }
 
 }

@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 for (let i = 0; i < 10; i++) {
                     for (let j = 0; j < 20; j++) {
                         if (this.gameMap[i][j] !== "") {
-                            this.createRect(i, j, this.gameMap[i][j], ctx)
+                            this.createRect(i, j, this.gameMap[i][j], ctx);
                         }
                     }
                 }
@@ -95,9 +95,7 @@ document.addEventListener("DOMContentLoaded", function() {
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
                     if (type.rotations[rotation][i][j]) {
-
                         this.gameMap[j + x][i + y] = "";
-
                     }
                 }
             }
@@ -201,10 +199,10 @@ document.addEventListener("DOMContentLoaded", function() {
             highScores.sendHighScore(this.score);
         }
         //Dealing with controls
-        handleKeyUp(event) {
+        handleKeyDown(event) {
             if (this.isGameOver) {
                 if (event.key == " ") {
-                    location.reload();
+                    window.location.reload();
                 }
             } else {
                 if (event.key == "ArrowLeft") {
@@ -260,7 +258,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.drawMap();
                     this.deleteBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
                     if (this.detectCollision(this.currentX, this.currentY + 1, this.currentType, this.currentRotation)) {
-                        console.log("kolizja");
                         clearInterval(this.interval);
                         this.createBlock(this.currentX, this.currentY, this.currentType, this.currentRotation);
                         //Check if row is full
@@ -277,20 +274,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 }, 1000 / this.difficulty);
                 //Prevent event listener from multiplication
                 if (!this.gameStarted) {
-                    document.addEventListener("keyup", this.handleKeyUp.bind(this));
+                    document.addEventListener("keydown", this.handleKeyDown.bind(this));
                 }
                 this.gameStarted = true;
 
             } else {
                 this.gameOver();
                 clearInterval(this.interval);
-                document.removeEventListener("keyup", this.handleKeyUp.bind(this))
+                document.removeEventListener("keydown", this.handleKeyDown.bind(this));
             }
 
         }
     }
     //Game starting
-    const game = new Game;
+    const game = new Game();
 
     game.drawMap();
     game.fallingBlock(game.randomShape());
